@@ -1,9 +1,10 @@
 #import "template.typ": project
+#let version = toml("/typst.toml").package.version
 
 #show: project.with(
     title: "anti-matter",
     authors: ("tinger",),
-    version: "0.0.1",
+    version: version,
     url: "https://github.com/tingerrr/typst-anti-matter",
     date: datetime.today().display(),
     abstract: [
@@ -22,6 +23,8 @@
         inset: 5pt
     )
 
+    show "{{version}}": version
+
     body
 }
 
@@ -37,7 +40,7 @@
     #raw(
         block: true,
         lang: "typst",
-        read("example/main.typ").replace(regex("/src/lib.typ"), "@preview/anti-matter:0.0.1")
+        read("example/main.typ").replace(regex("/src/lib.typ"), "@preview/anti-matter:{{version}}")
     )
 
     Would generate an outline like this:
@@ -66,7 +69,7 @@
     #let spec = (
         front: "I",
         inner: none,
-        back: (..args) => numbering("", ..args)
+        back: (..args) => numbering("I", ..args) + [ --- ]
     )
     ```
 
@@ -75,10 +78,17 @@
     #let spec = (front: "I", inner: "1", back: "I")
     ```
 
+    == The markers
+    The markers `anti-front-end` and `anti-inner-end` must be placed on the last page of their
+    respective matter, a leading `pagebreak` before a marker will result in an incorrect marker
+    position. While the marker and numbering location could be compared relative to their page too,
+    this would fail to work for page numbering in the header as it would logically infront of the
+    marker.
+
     == Customizing your page header
     The convenience function `anti-header` is provided for this:
     ```typst
-    #import "@preview/anti-matter:0.0.1": anti-matter, anti-header //, ...
+    #import "@preview/anti-matter:{{version}}": anti-matter, anti-header //, ...
     #let spec = anti-thesis()
     #show: anti-matter.with(spec: spec)
 
@@ -93,7 +103,7 @@
     This can be used to customize `outline.entry` and other elements which display the page of a
     query (like):
     ```typst
-    #import "@preview/anti-matter:0.0.1": anti-matter, anti-page-at //, ...
+    #import "@preview/anti-matter:{{version}}": anti-matter, anti-page-at //, ...
     #let spec = anti-thesis()
     #show: anti-matter.with(spec: spec)
 

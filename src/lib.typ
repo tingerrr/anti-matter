@@ -1,7 +1,7 @@
 // avoid exporting util
 #let (
   anti-front-end,
-  anti-back-start,
+  anti-inner-end,
   anti-outer-counter,
   anti-inner-counter,
   anti-active-counter-at,
@@ -28,47 +28,61 @@
     if "back" not in spec { panic("missing back key") }
   }
 
-  let label-front-end = <anti-matter:front:end>
-  let label-back-start = <anti-matter:back:start>
+  let meta-label = <anti-matter:label>
+  let key-front-end = "anti-matter:front-end"
+  let key-inner-end = "anti-matter:inner-end"
 
   // get matter and correction at given loc
   let where-am-i(spec, loc) = {
-    let front-matter = query(label-front-end, loc)
-    let back-matter = query(label-back-start, loc)
+    let markers = query(meta-label, loc)
 
-    assert.eq(front-matter.len(), 1, message: "Must have exactly one front matter start marker")
-    assert.eq(back-matter.len(), 1, message: "Must have exactly one back matter start marker")
+    assert.eq(
+      markers.len(),
+      2,
+      message: "Must have exactly start marker (do not use <anti-matter:meta>)"
+    )
+    assert.eq(markers.at(0).value, key-front-end, message: "First marker must be front end marker")
+    assert.eq(markers.at(1).value, key-inner-end, message: "Second marker must be inner end marker")
 
-    let front-matter = front-matter.first().location()
-    let back-matter = back-matter.first().location()
+    let front-matter = markers.first().location()
+    let inner-matter = markers.last().location()
 
     let front-matter-end = counter(page).at(front-matter).at(0)
-    let back-matter-start = counter(page).at(back-matter).at(0)
+    let inner-matter-end = counter(page).at(inner-matter).at(0)
 
     if loc.page() <= front-matter.page() {
       ("front", spec.front, 0)
-    } else if front-matter.page() < loc.page() and loc.page() <= back-matter.page() {
+    } else if front-matter.page() < loc.page() and loc.page() <= inner-matter.page() {
       ("inner", spec.inner, front-matter-end)
     } else {
-      ("back", spec.back, back-matter-start - front-matter-end)
+      ("back", spec.back, inner-matter-end - front-matter-end)
     }
   }
 
-  let mark(label) = [#metadata("anti-matter-marker")#label]
+  /// Mark the end of the front matter of your document, place this on the last page of your front
+  /// matter. Make sure to put this before trainling `pagebreaks`.
+  ///
+  /// -> content
+  let anti-front-end() = [#metadata(key-front-end) #meta-label]
 
-  /// Mark the end of the front matter of your document.
-  let anti-front-end = mark(label-front-end)
+  /// Mark the end of the inner matter of your document, place this on the last page of your inner
+  /// matter. Make sure to put this before trainling `pagebreaks`.
+  ///
+  /// -> content
+  let anti-inner-end() = [#metadata(key-inner-end) #meta-label]
 
-  /// Mark the start of the back matter of your document.
-  let anti-back-start = mark(label-back-start)
+  /// Returns the counter for the front and back matter of your document.
+  ///
+  /// -> counter
+  let anti-outer-counter() = counter("anti-matter:outer")
 
-  /// The counter for the front and back matter of your document.
-  let anti-outer-counter = counter("anti-matter:outer")
+  /// Returns the counter for the main content of your document.
+  ///
+  /// -> counter
+  let anti-inner-counter() = counter("anti-matter:inner")
 
-  /// The counter for the main content of your document.
-  let anti-inner-counter = counter("anti-matter:inner")
-
-  /// Returns the active counter at the given loction.
+  /// Returns the active counter at the given loction. This can be used to set the page counter at
+  /// a certain position.
   ///
   /// - spec (dictionary): the spec of the document, see @@anti-matter
   /// - loc (location): the location to get the active counter for
@@ -77,9 +91,9 @@
     let (matter, _, _) = where-am-i(spec, loc)
 
     if matter == "inner" {
-      anti-inner-counter
+      anti-inner-counter()
     } else {
-      anti-outer-counter
+      anti-outer-counter()
     }
   }
 
@@ -134,16 +148,25 @@
   /// see the library documentation. This can be used for a show rule. The parameters are validated.
   ///
   /// - spec (dictionary): the spec describing the document numbering, see @@anti-matter
+  /// - debug (bool): display the current matter and assocaited infor in the page header
   /// - body (content): the content to render with anti-matter numbering
   /// -> content
   let anti-matter(
     spec: anti-thesis(),
+    debug: false,
     body,
   ) = {
     assert-spec-valid(spec)
 
     set page(
-      header: anti-header(spec, none),
+      header: if debug {
+        locate(loc => anti-header(spec)[
+          #let (matter, numbering, correction) = where-am-i(spec, loc)
+          #(matter: matter, numbering: numbering, correction: correction)
+        ])
+      } else {
+        anti-header(spec, none)
+      },
       numbering: (..args) => anti-page(spec),
     )
     show outline.entry: it => {
@@ -163,7 +186,7 @@
 
   (
     anti-front-end,
-    anti-back-start,
+    anti-inner-end,
     anti-outer-counter,
     anti-inner-counter,
     anti-active-counter-at,

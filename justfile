@@ -24,7 +24,7 @@ gen-new-ex:
 
 # generate the manual
 gen-man: gen-new-ex
-	typst compile {{ docs / 'manual.typ' }} {{ docs / 'manual.pdf' }} --root {{ root }}
+	typst compile {{ docs / 'manual.typ' }} {{ assets / 'manual.pdf' }} --root {{ root }}
 
 # generate README
 gen-docs: gen-new-ex

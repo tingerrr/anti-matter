@@ -9,7 +9,7 @@ and outer page counters.
 ```
 
 ![An example outline showing the outer roman numbering interrupted by temporary inner arabic
-numbering](assets/example.png)
+numbering][example]
 
 ## Features
 - Marking the start and end of front/end matter.
@@ -20,18 +20,22 @@ numbering](assets/example.png)
    - If you are setting your own page header, you must use `anti-header`, see section II in the
      [manual].
 2. Why is my outline not displaying the correct numbering?
-   - If you configure your own `outline.entry`, you must use `anti-page-at`, See section II in the
+   - If you configure your own `outline.entry`, you must use `anti-page-at`, see section II in the
      [manual].
 3. Why does my front/inner/back  matter numbering start on the wrong page?
+   - The markers must be on the last page of their respective matter, if you have a `pagebreak`
+     forcing them on the next page it will also incorrectly label that page.
    - This is likely a bug, please open an issue with a minimal reproducible example.
 
 ## Etymology
 The package name `anti-matter` was choosen as a word play on front/back matter.
 
 ## Glossary
-- [front matter](https://en.wikipedia.org/wiki/Book_design#Front_matter) - The first part of a
-  thesis or book (intro, outline, etc.)
-- [back or end matter](https://en.wikipedia.org/wiki/Book_design#Back_matter_(end_matter)) - The
-  last part of a thesis or book (bobliography, listings, acknowledgements, etc.)
+- [front matter] - The first part of a thesis or book (intro, outline, etc.)
+- [back or end matter] - The last part of a thesis or book (bobliography, listings,
+  acknowledgements, etc.)
 
-  [manual]: docs/manual.pdf
+[front matter]: https://en.wikipedia.org/wiki/Book_design#Front_matter
+[back or end matter]: https://en.wikipedia.org/wiki/Book_design#Back_matter_(end_matter)
+[example]: docs/example.png
+[manual]: docs/manual.pdf

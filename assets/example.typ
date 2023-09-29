@@ -1,4 +1,4 @@
-#import "@preview/anti-matter:0.0.1": anti-matter, anti-front-end, anti-back-start
+#import "@preview/anti-matter:0.0.2": anti-matter, anti-front-end, anti-inner-end
 
 #set page("a4", height: auto)
 #show heading.where(level: 1): it => pagebreak(weak: true) + it
@@ -12,9 +12,9 @@
 #show: anti-matter
 
 #include "front-matter.typ"
-#anti-front-end
+#anti-front-end()
 
 #include "chapters.typ"
+#anti-inner-end()
 
-#anti-back-start
 #include "back-matter.typ"
