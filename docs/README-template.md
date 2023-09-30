@@ -25,14 +25,14 @@ numbering][example]
 3. Why does my front/inner/back  matter numbering start on the wrong page?
    - The markers must be on the last page of their respective matter, if you have a `pagebreak`
      forcing them on the next page it will also incorrectly label that page.
-   - This is likely a bug, please open an issue with a minimal reproducible example.
+   - Otherwise please open an issue with a minimal reproducible example.
 
 ## Etymology
 The package name `anti-matter` was choosen as a word play on front/back matter.
 
 ## Glossary
 - [front matter] - The first part of a thesis or book (intro, outline, etc.)
-- [back or end matter] - The last part of a thesis or book (bobliography, listings,
+- [back or end matter] - The last part of a thesis or book (bibliography, listings,
   acknowledgements, etc.)
 
 [front matter]: https://en.wikipedia.org/wiki/Book_design#Front_matter
