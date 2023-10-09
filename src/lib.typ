@@ -120,10 +120,12 @@
   let anti-page-at(spec, loc) = {
     let (_, num, correction) = where-am-i(spec, loc)
 
-    let vals = counter(page).at(loc)
-    vals.at(0) = vals.at(0) - correction
+    if num != none {
+      let vals = counter(page).at(loc)
+      vals.at(0) = vals.at(0) - correction
 
-    numbering(num, ..vals)
+      numbering(num, ..vals)
+    }
   }
 
   /// Returns the formatted page number at the given location with the required adjustments and

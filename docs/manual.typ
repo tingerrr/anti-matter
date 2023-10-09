@@ -46,7 +46,7 @@
     Would generate an outline like this:
     #block(fill: gray.lighten(50%), radius: 5pt, inset: 5pt, image("/assets/example.png"))
 
-    The front matter (in this case the outlines) are numbered using `"i"`, the content starts new at
+    The front matter (in this case the outlines) are numbered using `"I"`, the content starts new at
     `"1"` and the back matter (glossary, acknowledgement, etc) are numbered `"I"` again, continuing
     from where the front matter left off.
 ]
