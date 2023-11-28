@@ -1,201 +1,120 @@
-// avoid exporting util
-#let (
-  anti-front-end,
-  anti-inner-end,
-  anti-outer-counter,
-  anti-inner-counter,
-  anti-active-counter-at,
-  anti-page-at,
-  anti-page,
-  anti-header,
-  anti-thesis,
-  anti-matter,
+#import "core.typ"
+#import "rules.typ"
+
+/// Mark the end of a part of your document, place this on the last page of your current part. This
+/// must be put into the document exactly twice.
+///
+/// - label (label): a label to use for the fence
+/// -> content
+#let fence(label: <anti-matter:fence>) = [#metadata("anti-matter-fence") #label]
+
+/// Set the numbering for the current part.
+///
+/// - numbering (str, function, none): the new numbering for the current part
+/// -> content
+#let set-numbering(numbering) = locate(loc => {
+  import "util.typ"
+
+  util.assert(numbering)
+
+  let key = core.part(loc)
+  let (_, idx) = core.select(key)
+  core.numbering-state().update(value => {
+    value.numbering.at(idx) = numbering
+    value
+  })
+})
+
+/// Returns the number for the given
+///
+/// - passthrough (bool): if `false` the page number is not formatted and instead passed directly
+/// - loc (location, none): the location at which to get the part for
+/// -> content
+#let page-number(
+  passthrough: false,
+  loc: none,
 ) = {
-  // TODO: I think the spec could be removed in favor of loc.page-numbering()
+  import "util.typ"
 
-  // validate spec
-  let assert-spec-valid(spec) = {
-    if type(spec) != dictionary {
-      panic("spec must be a dictionary, was " + type(spec))
-    }
-
-    if spec.len() != 3 {
-      panic("spec must be exactly 3 elements long, was " + str(spec.len()))
-    }
-
-    if "front" not in spec { panic("missing front key") }
-    if "inner" not in spec { panic("missing inner key") }
-    if "back" not in spec { panic("missing back key") }
-  }
-
-  let meta-label = <anti-matter:label>
-  let key-front-end = "anti-matter:front-end"
-  let key-inner-end = "anti-matter:inner-end"
-
-  // get matter and correction at given loc
-  let where-am-i(spec, loc) = {
-    let markers = query(meta-label, loc)
-
-    assert.eq(
-      markers.len(),
-      2,
-      message: "Must have exactly start marker (do not use <anti-matter:meta>)"
-    )
-    assert.eq(markers.at(0).value, key-front-end, message: "First marker must be front end marker")
-    assert.eq(markers.at(1).value, key-inner-end, message: "Second marker must be inner end marker")
-
-    let front-matter = markers.first().location()
-    let inner-matter = markers.last().location()
-
-    let front-matter-end = counter(page).at(front-matter).at(0)
-    let inner-matter-end = counter(page).at(inner-matter).at(0)
-
-    if loc.page() <= front-matter.page() {
-      ("front", spec.front, 0)
-    } else if front-matter.page() < loc.page() and loc.page() <= inner-matter.page() {
-      ("inner", spec.inner, front-matter-end)
-    } else {
-      ("back", spec.back, inner-matter-end - front-matter-end)
-    }
-  }
-
-  /// Mark the end of the front matter of your document, place this on the last page of your front
-  /// matter. Make sure to put this before trainling `pagebreaks`.
-  ///
-  /// -> content
-  let anti-front-end() = [#metadata(key-front-end) #meta-label]
-
-  /// Mark the end of the inner matter of your document, place this on the last page of your inner
-  /// matter. Make sure to put this before trainling `pagebreaks`.
-  ///
-  /// -> content
-  let anti-inner-end() = [#metadata(key-inner-end) #meta-label]
-
-  /// Returns the counter for the front and back matter of your document.
-  ///
-  /// -> counter
-  let anti-outer-counter() = counter("anti-matter:outer")
-
-  /// Returns the counter for the main content of your document.
-  ///
-  /// -> counter
-  let anti-inner-counter() = counter("anti-matter:inner")
-
-  /// Returns the active counter at the given loction. This can be used to set the page counter at
-  /// a certain position.
-  ///
-  /// - spec (dictionary): the spec of the document, see @@anti-matter
-  /// - loc (location): the location to get the active counter for
-  /// -> counter
-  let anti-active-counter-at(spec, loc) = {
-    let (matter, _, _) = where-am-i(spec, loc)
-
-    if matter == "inner" {
-      anti-inner-counter()
-    } else {
-      anti-outer-counter()
-    }
-  }
-
-  /// Use the default spec with shared outer numbering and counter.
-  ///
-  /// The dictionary that is returned is simply the numbering for the `front`, `inner` and `back`
-  /// keys.
-  ///
-  /// - outer (string, function): the numbering used for front and back matter
-  /// - inner (string, function): the numbering used for the document's main content
-  /// -> dictionary
-  let anti-thesis(outer: "I", inner: "1") = (
-    front: outer,
-    inner: inner,
-    back: outer,
-  )
-
-  /// Returns the page numbering at the given location with the required adjustments and numbering
-  /// given by the spec.
-  ///
-  /// - spec (dictionary): the spec of the document, see @@anti-matter
-  /// - loc (location): the location at which to evaluate the numbering
-  /// -> content
-  let anti-page-at(spec, loc) = {
-    let (_, num, correction) = where-am-i(spec, loc)
-
-    if num != none {
-      let vals = counter(page).at(loc)
-      vals.at(0) = vals.at(0) - correction
-
-      numbering(num, ..vals)
-    }
-  }
-
-  /// Returns the formatted page number at the given location with the required adjustments and
-  /// numbering given by the spec.
-  ///
-  /// - spec (dictionary): the spec describing the document numbering, see @@anti-matter
-  /// -> content
-  let anti-page(spec) = locate(loc => anti-page-at(spec, loc))
-
-  /// Render a page header while maintaining anti-matter counter stepping.
-  ///
-  /// - spec (dictionary): the spec describing the document numbering, see @@anti-matter
-  /// - header (content): the header to render
-  /// -> content
-  let anti-header(spec, header) = {
-    locate(loc => anti-active-counter-at(spec, loc).step())
-    header
-  }
-
-  /// A template function that applies the page numbering and a show rule for outline.entry to fix
-  /// it's page numbering. If you need more granular control over outline entries and page headers
-  /// see the library documentation. This can be used for a show rule. The parameters are validated.
-  ///
-  /// - spec (dictionary): the spec describing the document numbering, see @@anti-matter
-  /// - debug (bool): display the current matter and assocaited infor in the page header
-  /// - body (content): the content to render with anti-matter numbering
-  /// -> content
-  let anti-matter(
-    spec: anti-thesis(),
-    debug: false,
-    body,
-  ) = {
-    assert-spec-valid(spec)
-
-    set page(
-      header: if debug {
-        locate(loc => anti-header(spec)[
-          #let (matter, numbering, correction) = where-am-i(spec, loc)
-          #(matter: matter, numbering: numbering, correction: correction)
-        ])
-      } else {
-        anti-header(spec, none)
-      },
-      numbering: (..args) => anti-page(spec),
-    )
-    show outline.entry: it => {
-      link(it.element.location(), it.body)
-      if it.fill != none {
-        [ ]
-        box(width: 1fr, it.fill)
-        [ ]
-      } else {
-        h(1fr)
-      }
-      link(it.element.location(), anti-page-at(spec, it.element.location()))
-    }
+  util.maybe-locate(loc, loc => {
+    let key = core.part(loc)
+    let (counter, idx) = core.select(key)
   
-    body
+    let n = counter.at(loc).last()
+    let l = counter.final(loc).last()
+
+    if passthrough {
+      n
+    } else {
+      let num = core.numbering-state().at(loc).numbering.at(idx)
+      if type(num) == function or (type(num) == str and util.cardinality(num) == 2) {
+        numbering(num, n, l)
+      } else {
+        numbering(num, n)
+      }
+    }
+  })
+}
+
+/// Step the anti-matter counter for the current part.
+///
+/// -> content
+#let step() = locate(loc => {
+  let key = core.part(loc)
+  let (counter, idx) = core.select(key)
+  let num = core.numbering-state().at(loc).numbering.at(idx)
+  if num != none { counter.step() }
+})
+
+
+/// A template function that applies the page numbering and a show rule for `outline.entry` to fix
+/// it's page numbering. If you need more granular control over outline entries and page headers see
+/// the library documentation. This should be used as a show rule.
+///
+/// - header (content, none): the page header to display
+/// - numbering (array): an array of numberings describing the numberings for each part of your
+///   document, the numberings can be a `str`, `function` or `none`, functions receive the current
+///   and final amount as arguments
+/// - label (label): the label to use for document fences
+/// - body (content): the content to render with anti-matter numbering
+/// -> content
+#let anti-matter(
+  header: none,
+  numbering: ("I", "1", "I"),
+  label: <anti-matter:fence>,
+  body,
+) = {
+  import "util.typ"
+
+  assert.eq(numbering.len(), 3, message: util.oxifmt.strfmt(
+    "Must have exactly 3 numberings, got {}",
+    numbering.len(),
+  ))
+
+  for n in numbering {
+    util.assert-pattern(n)
   }
 
-  (
-    anti-front-end,
-    anti-inner-end,
-    anti-outer-counter,
-    anti-inner-counter,
-    anti-active-counter-at,
-    anti-page-at,
-    anti-page,
-    anti-header,
-    anti-thesis,
-    anti-matter,
+  set page(
+    header: step() + header,
+    numbering: (..args) => page-number(),
   )
+
+  show outline.entry: rules.outline-entry.with(func: loc => page-number(loc: loc))
+  locate(loc => {
+    let fences =  query(label, loc)
+    assert.eq(fences.len(), 2, message: util.oxifmt.strfmt(
+      "Must have exactly 2 fences, found {}, did you use `fence()` (`<{}>`) more than twice?",
+      fences.len(),
+      label,
+    ))
+  })
+
+  // NOTE: for some reason the state needs a default even when it is set here,
+  //       before any page is rendered
+  core.numbering-state(label: label, numbering: numbering).update((
+    label: label,
+    numbering: numbering,
+  ))
+  body
 }

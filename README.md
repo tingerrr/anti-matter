@@ -5,45 +5,42 @@ and outer page counters.
 
 ## Example
 ```typst
-#import "@preview/anti-matter:0.0.2": anti-matter, anti-front-end, anti-inner-end
+#import "@preview/anti-matter:0.1.0": anti-matter, fence, set-numbering
 
 #set page("a4", height: auto)
 #show heading.where(level: 1): it => pagebreak(weak: true) + it
 
-// add a title page and reset the counter
-#[
-  #set page(numbering: none)
-  #counter(page).update(0)
-]
-
 #show: anti-matter
 
+#set-numbering(none)
+#align(center)[My Title Page]
+#pagebreak()
+#set-numbering("I")
+
 #include "front-matter.typ"
-#anti-front-end()
+#fence()
 
 #include "chapters.typ"
-#anti-inner-end()
+#fence()
 
 #include "back-matter.typ"
-
 ```
 
-![An example outline showing the outer roman numbering interrupted by temporary inner arabic
+![An example outline showing the outer Roman numbering interrupted by temporary inner Arabic
 numbering][example]
 
 ## Features
-- Marking the start and end of front/end matter.
-- Specifying the numbering styles for each matter and regular content
+- Marking the start and end of front/back matter.
+- Specifying the numbering styles for each part fo the document
 
 ## FAQ
 1. Why are the pages not correctly counted?
-   - If you are setting your own page header, you must use `anti-header`, see section II in the
-     [manual].
+   - If you are setting your own page header, you must use `step`, see section II in the [manual].
 2. Why is my outline not displaying the correct numbering?
-   - If you configure your own `outline.entry`, you must use `anti-page-at`, see section II in the
+   - If you configure your own `outline.entry`, you must use `page-number`, see section II in the
      [manual].
 3. Why does my front/inner/back  matter numbering start on the wrong page?
-   - The markers must be on the last page of their respective matter, if you have a `pagebreak`
+   - The fences must be on the last page of their respective part, if you have a `pagebreak`
      forcing them on the next page it will also incorrectly label that page.
    - Otherwise please open an issue with a minimal reproducible example.
 
@@ -52,10 +49,9 @@ The package name `anti-matter` was choosen as a word play on front/back matter.
 
 ## Glossary
 - [front matter] - The first part of a thesis or book (intro, outline, etc.)
-- [back or end matter] - The last part of a thesis or book (bibliography, listings,
-  acknowledgements, etc.)
+- [back matter] - The last part of a thesis or book (bibliography, listings, acknowledgements, etc.)
 
 [front matter]: https://en.wikipedia.org/wiki/Book_design#Front_matter
 [back or end matter]: https://en.wikipedia.org/wiki/Book_design#Back_matter_(end_matter)
-[example]: assets/example.png
-[manual]: assets/manual.pdf
+[example]: examples/example.png
+[manual]: docs/manual.pdf

@@ -1,11 +1,11 @@
 [package]
 entrypoint = "src/lib.typ"
 name = "anti-matter"
-version = "0.0.2"
+version = "0.1.0"
 compiler = "0.8.0"
 authors = ["tinger <me@tinger.dev>"]
-repository = "https://github.com/tingerrr/typst-anti-matter"
+repository = "https://github.com/tingerrr/anti-matter"
 description = "Simple page numbering of front and back matter."
-keywords = ["page", "numbering"]
+keywords = ["page", "numbering", "thesis", "book"]
 license = "MIT"
-exclude = ["example.png", "LICENSE", "README.md"]
+exclude = ["docs", "example", "README.md"]

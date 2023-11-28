@@ -4,17 +4,14 @@
 // It takes your content and some metadata and formats it.
 // Go ahead and customize it to your liking!
 #let project(
-  title: "",
+  package: (:),
   subtitle: "",
   abstract: [],
-  authors: (),
-  url: none,
   date: none,
-  version: none,
   body,
 ) = {
   // Set the document's basic properties.
-  set document(author: authors, title: title)
+  set document(author: package.authors, title: package.name)
   set text(font: "Linux Libertine", lang: "en")
  
   show heading.where(level: 1): it => block(smallcaps(it), below: 1em)
@@ -27,11 +24,11 @@
 
   // Title row.
   align(center)[
-    #block(text(weight: 700, 1.75em, title))
+    #block(text(weight: 700, 1.75em, package.name))
     #block(text(1.0em, subtitle))
     #v(4em, weak: true)
-    v#version #h(1.2cm) #date 
-    #block(link(url))
+    v#package.version #h(1.2cm) #date
+    #block(link(package.repository))
     #v(1.5em, weak: true)
   ]
 
@@ -40,9 +37,9 @@
     top: 0.5em,
     x: 2em,
     grid(
-      columns: (1fr,) * calc.min(3, authors.len()),
+      columns: (1fr,) * calc.min(3, package.authors.len()),
       gutter: 1em,
-      ..authors.map(author => align(center, strong(author))),
+      ..package.authors.map(author => align(center, strong(author))),
     ),
   )
 

@@ -1,17 +1,14 @@
+#import "@preview/tidy:0.1.0"
+
 #import "template.typ": project
-#let version = toml("/typst.toml").package.version
+#let package = toml("/typst.toml").package
 
 #show: project.with(
-    title: "anti-matter",
-    authors: ("tinger",),
-    version: version,
-    url: "https://github.com/tingerrr/typst-anti-matter",
+    package: package,
     date: datetime.today().display(),
     abstract: [
-        This packages allows you to simply mark the end and start of your front matter and back
-        matter respectively to change style and value of your page number without manually setting
-        and keeping track of inner and outer page counters. Books and theses often number front and
-        back matter in a different style than the actual content.
+        This packages automaticall numbers the front and back matter fo your document separately
+        from the main content. This is commonly used for books and theses.
     ]
 )
 
@@ -23,28 +20,33 @@
         inset: 5pt
     )
 
-    show "{{version}}": version
+    show "{{version}}": package.version
 
     body
 }
 
 #show heading.where(level: 1): it => pagebreak(weak: true) + it
-
-#show outline: set heading(outlined: true)
-#outline(indent: auto, depth: 1)
+#outline(
+    indent: auto,
+    target: heading.where(outlined: true).before(<api-ref>, inclusive: true),
+)
 
 = Introduction
 #[
-    A document like this:
     #show: codeblocks
+
+    A document like this:
     #raw(
         block: true,
         lang: "typst",
-        read("example/main.typ").replace(regex("/src/lib.typ"), "@preview/anti-matter:{{version}}")
+        read("/example/main.typ").replace(
+            regex("/src/lib.typ"),
+            "@preview/anti-matter:{{version}}",
+        ),
     )
 
     Would generate an outline like this:
-    #block(fill: gray.lighten(50%), radius: 5pt, inset: 5pt, image("/assets/example.png"))
+    #block(fill: gray.lighten(50%), radius: 5pt, inset: 5pt, image("/example/example.png"))
 
     The front matter (in this case the outlines) are numbered using `"I"`, the content starts new at
     `"1"` and the back matter (glossary, acknowledgement, etc) are numbered `"I"` again, continuing
@@ -57,84 +59,91 @@
 
     `anti-matter` keeps track of it's own inner and outer counter, which are updated in the header
     of a page. Numbering at a given location is resolved by inspecting where this location is
-    between the given markers and applying a spec to it. This means that setting a custom page
-    header or changing `outline.entry` with a `show` rule can break your setup.
+    between the given fences and applying the expected numbering to it. Both `page.header` and
+    `outline.entry` need some special care if you wish to configure them. While `page.header` can
+    simply be set in `anti-matter`, if you want to set it somewhere else you need to ensure that the
+    counters are stepped. Likewise `outline.entry` or anything that displays page numbers for
+    elements need to resolve the apge number from `anti-matter`.
 
-    == The specification
-    Most `anti-matter` functions require a `spec`, which is a dictionary detailing how numbering
-    across the document should be done. It is a dictionary with three requried keys, `front`,
-    `inner`, and `back`. Valid numberings are the same as parameters to various `numbering`
-    parameters, as well as `none` to display nothing.
+    == Numbering
+    Numbering is done as usual, with a string or function, or `none`. If the numbering is set to
+    `none` then the counter is not stepped. Patterns and functions receive the current and total
+    value. Which means that `"1 / 1"` will display `"3 / 5"` on the third out of five pages.
     ```typst
-    #let spec = (
-        front: "I",
-        inner: none,
-        back: (..args) => numbering("I", ..args) + [ --- ]
-    )
+    #import "@preview/anti-matter:{{version}}": anti-matter, fence
+    #show: anti-matter(numbering: ("I", numbering.with("1 / 1"), none))
     ```
 
-    The default `spec` is `anti-thesis`, which is equal to:
+    == Fences
+    For `anti-matter` to know in which part of the document it is, it needs exactly 2 fences, these
+    must be placed on the last page of the front matter and the last page of the main content. Make
+    sure to put them before your page breaks, otherwise they'll be pushed onto the next page. Fences
+    are placed with `fence()`.
     ```typst
-    #let spec = (front: "I", inner: "1", back: "I")
+    #import "@preview/anti-matter:{{version}}": anti-matter, fence
+    #show: anti-matter
+
+    // front matter
+    #lorem(1000)
+    #fence()
+
+    // content
+    #lorem(1000)
+    #fence()
+
+    // back matter
+    #lorem(1000)
     ```
 
-    == The markers
-    The markers `anti-front-end` and `anti-inner-end` must be placed on the last page of their
-    respective matter, a leading `pagebreak` before a marker will result in an incorrect marker
-    position. While the marker and numbering location could be compared relative to their page too,
-    this would fail to work for page numbering in the header as it would logically infront of the
-    marker.
-
-    == Customizing your page header
-    The convenience function `anti-header` is provided for this:
+    == Page header
+    `anti-matter` uses the page header to step it's own counters. If you want to adjust the page
+    header sometime after the `anti-matter` show rule, you have to add `step()` before it.
     ```typst
-    #import "@preview/anti-matter:{{version}}": anti-matter, anti-header //, ...
-    #let spec = anti-thesis()
-    #show: anti-matter.with(spec: spec)
-
-    // render your own header while retaining the correct counter updates
-    #set page(header: anti-header(spec)[...])
+    #import "@preview/hydra:0.2.0": hydra
+    #import "@preview/anti-matter:{{version}}": anti-matter, step
+    #show: anti-matter
 
     // ...
+    // after front matter
+    #set page(header: step() + hydra())
     ```
 
-    == Customizing your outline entries
-    Similarily, when a page should displayed with `anti-matter` styling, `anti-page-at` is used.
-    This can be used to customize `outline.entry` and other elements which display the page of a
-    query (like):
+    == Outline entries and querying
+    By default `outline` will use the regular page counter to resolve the page number. If you want
+    to configure the appearance of `outline` but still get the correct page numbers use
+    `page-number` with the element location.
     ```typst
-    #import "@preview/anti-matter:{{version}}": anti-matter, anti-page-at //, ...
-    #let spec = anti-thesis()
-    #show: anti-matter.with(spec: spec)
+    #import "@preview/anti-matter:{{version}}": anti-matter, page-number
+    #show: anti-matter
 
     // render your own outline style while retaining the correct page numbering for queried elements
     #show outline.entry: it => {
         it.body
         box(width: 1fr, it.fill)
-        anti-page-at(spec, it.element.location())
+        page-number(loc: it.element.location())
     }
-
-    // ...
     ```
 
-    In general the prevously mentioned `show` and `set` rules are the only thing to consider when
-    customizing your document whiel using `anti-matter`. The `anti-matter` template function simply
-    passes the spec passed to those functions and applies these rules for convenience. Setting the
-    `spec` may become more convenient in the future with support for
-    #link("https://github.com/typst/typst/issues/147")[custom elements].
+    The same logic applies to other things where elemnts are queried and display their page number.
 ]
 
-= API-Reference
-#{
-    import "@preview/tidy:0.1.0"
-    let module = tidy.parse-module(read("/src/lib.typ"))
-    tidy.show-module(module, style: tidy.styles.default)
-}
+= API-Reference <api-ref>
+#let mods = (
+    (`anti-matter`, "/src/lib.typ", [
+        The public and stable library API intended for regular use.
+    ]),
+    (`core`, "/src/core.typ", [
+        The core API, used for querying internal state, public, but not stable.
+    ]),
+    (`rules`, "/src/rules.typ", [
+        Show and set rules which are applied in `anti-matter`, provides default versions to turn of
+        rule.
+    ]),
+)
 
-#set heading(numbering: none)
+#for (title, path, descr) in mods [
+    == #title
+    #descr
 
-= Future work
-The aim of this package is to be obsolete for a more powerful counter system in typst. Unfortunately
-this seems far away currently. In the mean time this should do for the most common case of
-alternating page numbering. Bug reports are appreciated, this package was only tested with 2
-documents.
+    #tidy.show-module(tidy.parse-module(read(path)), style: tidy.styles.default)
+]
