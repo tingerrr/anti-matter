@@ -27,10 +27,10 @@
 /// -> str
 #let part(loc) = {
   let label = numbering-state().at(loc).label
-  let markers = query(label, loc)
+  let fences = query(label, loc)
 
-  let fence-1 = markers.first().location()
-  let fence-2 = markers.last().location()
+  let fence-1 = fences.first().location()
+  let fence-2 = fences.last().location()
 
   if loc.page() <= fence-1.page() {
     "front"
@@ -45,11 +45,9 @@
 ///
 /// - part (str): the part for which to get the numbering for (must be one of `front`, `inner`,
 ///   `back`)
-/// -> array
-#let select(part) = if part == "front" {
-  (outer-counter(), 0)
-} else if part == "inner" {
-  (inner-counter(), 1)
-} else if part == "back" {
-  (outer-counter(), 2)
-}
+/// -> (array, none)
+#let select(part) = (
+  front: (outer-counter(), 0),
+  inner: (inner-counter(), 1),
+  back: (outer-counter(), 2),
+).at(part, default: none)

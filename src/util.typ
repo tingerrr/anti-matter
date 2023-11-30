@@ -13,11 +13,12 @@
   }
 }
 
-/// Returns the cardinality of a numbering pattern, i.e the number of counting symbols it contains.
+/// Returns the cardinality of a numbering pattern, i.e. the number of counting symbols it contains.
 ///
 /// - pattern (str): the numbering pattern to get the cardinality for
 /// -> integer
 #let cardinality(pattern) = {
+  // this naiive check is fine because numbering patterns currently don't support escaping
   let symbols = ("1", "a", "A", "i", "I", "い", "イ", "א", "가", "ㄱ", "\\*")
   pattern.matches(regex(symbols.join("|"))).len()
 }

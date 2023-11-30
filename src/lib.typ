@@ -40,17 +40,17 @@
     let key = core.part(loc)
     let (counter, idx) = core.select(key)
   
-    let n = counter.at(loc).last()
-    let l = counter.final(loc).last()
+    let at = counter.at(loc).last()
+    let last = counter.final(loc).last()
 
     if passthrough {
-      n
+      (current: at, last: last, at-none: num == none)
     } else {
       let num = core.numbering-state().at(loc).numbering.at(idx)
       if type(num) == function or (type(num) == str and util.cardinality(num) == 2) {
-        numbering(num, n, l)
+        numbering(num, at, last)
       } else if type(num) == str {
-        numbering(num, n)
+        numbering(num, at)
       }
     }
   })
