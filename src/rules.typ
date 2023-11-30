@@ -1,5 +1,7 @@
 /// A function which displays an `outline.entry` using its default show rule _with_ the given page
-/// numbering.
+/// numbering function.
+///
+/// This can be used with its default parameters to revert the outline show rule in `anti-matter`.
 ///
 /// - entry (outline.entry): the outline entry to display
 /// - func: (function): transforms a location to a page number

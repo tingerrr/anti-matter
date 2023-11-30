@@ -4,7 +4,7 @@
 /// Mark the end of a part of your document, place this on the last page of your current part. This
 /// must be put into the document exactly twice.
 ///
-/// - label (label): a label to use for the fence
+/// - label (label): the label to use for the fences
 /// -> content
 #let fence(label: <anti-matter:fence>) = [#metadata("anti-matter-fence") #label]
 
@@ -25,11 +25,16 @@
   })
 })
 
-/// Returns the number for the given
+/// Returns and formats the page number for the given location.
 ///
-/// - passthrough (bool): if `false` the page number is not formatted and instead passed directly
-/// - loc (location, none): the location at which to get the part for
-/// -> content
+/// If `passthrough` is `true` and `loc` is not `none`, then a dictionary is returned which contains
+/// the current and last number, as well as whether the numbering was `none` at this location. If
+/// the numbering was `none`, then the current number is from the last page with numbering.
+///
+/// - passthrough (bool): if `false` the page number is not formatted and instead the numbers are
+///   returned directly
+/// - loc (location, none): the location at which to get the numbers for
+/// -> (content, array, none)
 #let page-number(
   passthrough: false,
   loc: none,
@@ -66,9 +71,8 @@
   if num != none { counter.step() }
 })
 
-
-/// A template function that applies the page numbering and a show rule for `outline.entry` to fix
-/// it's page numbering. If you need more granular control over outline entries and page headers see
+/// A template function which applies the page numbering and a show rule for `outline.entry` to fix
+/// its page numbering. If you need more granular control over outline entries and page headers see
 /// the library documentation. This should be used as a show rule.
 ///
 /// - header (content, none): the page header to display

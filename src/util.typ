@@ -2,7 +2,7 @@
 
 /// Run `func` in locate to get a location, skip locate if a location is already given.
 ///
-/// - loc (location): a `location` which may not be set
+/// - loc (location, none): a `location` which may not be set
 /// - func (function): a function which receives a `location`
 /// -> any
 #let maybe-locate(loc, func) = {

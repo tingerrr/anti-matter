@@ -7,7 +7,7 @@
     package: package,
     date: datetime.today().display(),
     abstract: [
-        This packages automaticall numbers the front and back matter fo your document separately
+        This packages automatically numbers the front and back matter of your document separately
         from the main content. This is commonly used for books and theses.
     ]
 )
@@ -57,21 +57,31 @@
 #[
     #show: codeblocks
 
-    `anti-matter` keeps track of it's own inner and outer counter, which are updated in the header
+    `anti-matter` keeps track of its own inner and outer counter, which are updated in the header
     of a page. Numbering at a given location is resolved by inspecting where this location is
     between the given fences and applying the expected numbering to it. Both `page.header` and
     `outline.entry` need some special care if you wish to configure them. While `page.header` can
     simply be set in `anti-matter`, if you want to set it somewhere else you need to ensure that the
     counters are stepped. Likewise `outline.entry` or anything that displays page numbers for
-    elements need to resolve the apge number from `anti-matter`.
+    elements needs to get the page number from `anti-matter`.
 
     == Numbering
     Numbering is done as usual, with a string or function, or `none`. If the numbering is set to
     `none` then the counter is not stepped. Patterns and functions receive the current and total
-    value. Which means that `"1 / 1"` will display `"3 / 5"` on the third out of five pages.
+    value. Which means that `"1 / 1"` will display `"3 / 5"` on the third out of five pages. Because
+    `none` skips stepping it can be used to easily add a title page beforehand, without having to
+    reset the page counter.
     ```typst
-    #import "@preview/anti-matter:{{version}}": anti-matter, fence
+    #import "@preview/anti-matter:{{version}}": anti-matter, fence, set-numbering
     #show: anti-matter(numbering: ("I", numbering.with("1 / 1"), none))
+
+    #set-numbering(none)
+    #align(center + horizon)[Title]
+    #pagebreak()
+    #set-numbering("I")
+
+    // page numbering starts at "I"
+    // ...
     ```
 
     == Fences
@@ -96,7 +106,7 @@
     ```
 
     == Page header
-    `anti-matter` uses the page header to step it's own counters. If you want to adjust the page
+    `anti-matter` uses the page header to step its own counters. If you want to adjust the page
     header sometime after the `anti-matter` show rule, you have to add `step()` before it.
     ```typst
     #import "@preview/hydra:0.2.0": hydra
@@ -104,8 +114,10 @@
     #show: anti-matter
 
     // ...
-    // after front matter
+
     #set page(header: step() + hydra())
+
+    // ...
     ```
 
     == Outline entries and querying
@@ -122,6 +134,8 @@
         box(width: 1fr, it.fill)
         page-number(loc: it.element.location())
     }
+
+    // ...
     ```
 
     The same logic applies to other things where elemnts are queried and display their page number.
@@ -146,4 +160,5 @@
     #descr
 
     #tidy.show-module(tidy.parse-module(read(path)), style: tidy.styles.default)
+    #pagebreak(weak: true)
 ]

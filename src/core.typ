@@ -1,7 +1,7 @@
-/// Get the counter which keeps track of the outer page number.
+/// Get state which keeps track of numbering patterns.
 ///
 /// - label (label): the label which is used for document fences
-/// - numbering (array): the default numbering to start with
+/// - numbering (array): the default numberings to start with
 /// -> counter
 #let numbering-state(
   label: <anti-matter:fence>,
