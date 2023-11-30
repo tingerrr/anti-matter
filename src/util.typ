@@ -27,16 +27,16 @@
 /// - pattern (any): a value that may or may not be a valid pattern
 /// -> none
 #let assert-pattern(pattern) = {
-  if type(pattern) not in (str, function) {
-    oxifmt.strfmt("Expected `str` or `function`, got `{}`", type(pattern))
+  if type(pattern) not in (str, function, type(none)) {
+    panic(oxifmt.strfmt("Expected `str`, `function` or `none`, got `{}`", type(pattern)))
   }
 
   if type(pattern) == str {
     let card = cardinality(pattern)
     if card not in (1, 2) {
-      oxifmt.strfmt(
+      panic(oxifmt.strfmt(
         "Pattern can only contain 1 or 2 counting symbols, had {} (`\"{}\"`)", card, pattern
-      )
+      ))
     }
   }
 }
