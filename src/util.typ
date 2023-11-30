@@ -28,13 +28,15 @@
 /// -> none
 #let assert-pattern(pattern) = {
   if type(pattern) not in (str, function) {
-    oxifmt.strfmt("Expected `str` or `function`, got `{}`", i, type(n))
+    oxifmt.strfmt("Expected `str` or `function`, got `{}`", type(pattern))
   }
 
   if type(pattern) == str {
     let card = cardinality(pattern)
     if card not in (1, 2) {
-      oxifmt.strfmt("Pattern can only contain 1 or 2 counting symbols, had {} (`\"{}\"`)", card, n)
+      oxifmt.strfmt(
+        "Pattern can only contain 1 or 2 counting symbols, had {} (`\"{}\"`)", card, pattern
+      )
     }
   }
 }

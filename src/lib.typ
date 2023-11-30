@@ -15,7 +15,7 @@
 #let set-numbering(numbering) = locate(loc => {
   import "util.typ"
 
-  util.assert(numbering)
+  util.assert-pattern(numbering)
 
   let key = core.part(loc)
   let (_, idx) = core.select(key)
@@ -49,7 +49,7 @@
       let num = core.numbering-state().at(loc).numbering.at(idx)
       if type(num) == function or (type(num) == str and util.cardinality(num) == 2) {
         numbering(num, n, l)
-      } else {
+      } else if type(num) == str {
         numbering(num, n)
       }
     }
