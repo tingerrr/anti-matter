@@ -15,5 +15,5 @@
   } else {
     h(1fr)
   }
-  link(entry.element.location(), func(entry.element.location()))
+  link(entry.element.location())[#func(entry.element.location())]
 }
