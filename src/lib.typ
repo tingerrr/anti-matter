@@ -48,10 +48,10 @@
     let at = counter.at(loc).last()
     let last = counter.final(loc).last()
 
+    let num = core.numbering-state().at(loc).numbering.at(idx)
     if passthrough {
       (current: at, last: last, at-none: num == none)
     } else {
-      let num = core.numbering-state().at(loc).numbering.at(idx)
       if type(num) == function or (type(num) == str and util.cardinality(num) == 2) {
         numbering(num, at, last)
       } else if type(num) == str {
